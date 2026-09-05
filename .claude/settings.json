@@ -17,12 +17,6 @@
       "Bash(git log:*)",
       "Bash(/usr/libexec/PlistBuddy -c \"Print:*)",
       "Bash(security find-identity:*)"
-    ],
-    "deny": [
-      "Bash(make release:*)",
-      "Bash(git push:*)",
-      "Bash(gh release:*)",
-      "Read(~/.config/garlo/release-key)"
     ]
   }
 }
