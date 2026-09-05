@@ -126,6 +126,12 @@ final class AppStore {
                 self?.helper.refresh()
             }
         }
+        Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                self?.settleNowItems()
+            }
+        }
     }
 
     /// Persist without going through a settings change.
@@ -159,8 +165,43 @@ final class AppStore {
         var hot: Bool
     }
 
-    /// One row per busy resource: disks, the primary link, CPU, memory.
-    var nowItems: [NowItem] {
+    /// The rows the popover shows: `rawNowItems` with hysteresis (a row
+    /// appears after 2 s of activity and stays 10 s after it ends) in a fixed
+    /// order, so the list never shuffles or flickers while the user reads it.
+    private(set) var nowItems: [NowItem] = []
+    private var nowFirstSeen: [String: Date] = [:]
+    private var nowLastSeen: [String: Date] = [:]
+    private var nowShown: [String: NowItem] = [:]
+
+    func settleNowItems() {
+        let now = Date()
+        let live = Dictionary(rawNowItems.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        for (id, item) in live {
+            nowLastSeen[id] = now
+            if nowFirstSeen[id] == nil { nowFirstSeen[id] = now }
+            if nowShown[id] != nil || now.timeIntervalSince(nowFirstSeen[id]!) >= 2 { nowShown[id] = item }
+        }
+        for id in Array(nowFirstSeen.keys) where live[id] == nil {
+            if now.timeIntervalSince(nowLastSeen[id] ?? now) >= 10 {
+                nowFirstSeen[id] = nil
+                nowLastSeen[id] = nil
+                nowShown[id] = nil
+            } else if var stale = nowShown[id] {
+                // still listed, but honest about it
+                stale.figure = "quiet"
+                stale.fraction = 0
+                stale.hot = false
+                stale.label = ""
+                nowShown[id] = stale
+            }
+        }
+        // fixed order: disks as the topology lists them, then link, CPU, memory
+        let order = engine.topology.disks.map { "disk-\($0.id)" } + ["net", "cpu", "mem"]
+        nowItems = order.compactMap { nowShown[$0] }
+    }
+
+    /// One row per busy resource right now, before hysteresis.
+    var rawNowItems: [NowItem] {
         var items: [NowItem] = []
         let w = engine.window
         for r in busyDisks {

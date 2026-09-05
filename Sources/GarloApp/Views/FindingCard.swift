@@ -19,6 +19,7 @@ struct FindingCard: View {
             }
             Text(finding.cause)
                 .font(.system(size: compact ? 12 : 13))
+                .monospacedDigit()
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(compact ? .secondary : .primary)

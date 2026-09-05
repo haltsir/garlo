@@ -6,6 +6,9 @@ struct ContentView: View {
     @Environment(AppStore.self) private var store
     @Environment(\.openWindow) private var openWindow
     @State private var contentHeight: CGFloat = 200
+    /// The height the popover keeps while open: it may grow for a new card
+    /// but never shrinks under the user's cursor; it settles again on reopen.
+    @State private var heldHeight: CGFloat = 200
 
     var body: some View {
         @Bindable var store = store
@@ -16,14 +19,20 @@ struct ContentView: View {
             // A menu-bar window proposes no height, so the content is measured.
             ScrollView {
                 content
-                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
+                        contentHeight = h
+                        heldHeight = max(heldHeight, min(max(h, 60), 560))
+                    }
             }
-            .frame(height: min(max(contentHeight, 60), 560))
+            .frame(height: heldHeight)
             Divider()
             footer
         }
         .frame(width: 440)
-        .onAppear { store.popoverOpen = true }
+        .onAppear {
+            store.popoverOpen = true
+            heldHeight = min(max(contentHeight, 60), 560)
+        }
         .onDisappear { store.popoverOpen = false }
         .sheet(item: $store.layoutSheet) { req in
             LayoutSheet(request: req)
@@ -222,7 +231,9 @@ struct NowRow: View {
                     Spacer()
                     Text(item.label)
                         .font(.system(size: 11, weight: .semibold))
+                        .monospacedDigit()
                         .foregroundStyle(item.hot ? Color.warn : .secondary)
+                        .frame(width: 84, alignment: .trailing)
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
