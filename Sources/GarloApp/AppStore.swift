@@ -405,11 +405,13 @@ enum Vestitel {
             "summary": summary + (f.actions.first.map { " Try: \($0.title)." } ?? ""),
             "tag": f.severity.rawValue,
             "symbol": f.domain == .network ? "wifi" : "externaldrive",
-            "id": "garlo-\(f.id.uuidString)",
+            // key-derived, not the UUID: Vestitel drops repeats of an id it has
+            // seen, so a finding that flaps all afternoon is one inbox item
+            "id": f.alertID(),
             "published": ISO8601DateFormatter().string(from: f.started),
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: event, options: [.prettyPrinted]) else { return }
-        let url = eventsFolder.appendingPathComponent("garlo-\(f.id.uuidString).json")
+        let url = eventsFolder.appendingPathComponent("\(f.alertID()).json")
         try? data.write(to: url, options: .atomic)
     }
 }

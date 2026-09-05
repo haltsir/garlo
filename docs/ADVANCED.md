@@ -150,12 +150,12 @@ A red alert is written as JSON to `~/Library/Application Support/Vestitel/Events
   "summary": "<cause> Try: <first action>.",
   "tag": "stalled",
   "symbol": "externaldrive",
-  "id": "garlo-<uuid>",
+  "id": "garlo-deviceslow-storage-2026-09-05",
   "published": "2026-09-05T18:03:11Z"
 }
 ```
 
-`symbol` is `wifi` for network findings and `externaldrive` for the rest. With Redact file paths on, every path that appears in an action is replaced by its last component in the summary.
+The id is the rule, the subject as a slug and the local day the finding started, not the finding's UUID. Vestitel drops repeats of an id it has seen (for 30 days), so a finding that flaps all afternoon (device slow while a copy pauses and resumes) is one inbox item per day. `symbol` is `wifi` for network findings and `externaldrive` for the rest. With Redact file paths on, every path that appears in an action is replaced by its last component in the summary.
 
 ## Sampling budget
 

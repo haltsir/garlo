@@ -135,6 +135,21 @@ public struct Finding: Codable, Sendable, Hashable, Identifiable {
     /// These are the only findings that go to Vestitel.
     public var isRedAlert: Bool { confidence == .confirmed && (severity == .stalled || rule == "deviceslow") }
 
+    /// The id a red alert carries into Vestitel: rule, subject and the day it
+    /// started, never the finding's own UUID. A finding that flaps (device
+    /// slow while a copy pauses and resumes) re-opens with a new UUID each
+    /// time; Vestitel dedupes on the id, so one incident per day is one event.
+    public func alertID(timeZone: TimeZone = .current) -> String {
+        let slug = subject.lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .joined(separator: "-")
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let d = cal.dateComponents([.year, .month, .day], from: started)
+        return String(format: "garlo-%@-%@-%04d-%02d-%02d", rule, slug, d.year ?? 0, d.month ?? 0, d.day ?? 0)
+    }
+
     init(candidate c: Candidate, at date: Date) {
         id = UUID()
         rule = c.rule

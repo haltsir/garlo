@@ -4,6 +4,8 @@ Product and engineering decisions with the reason behind each, so nobody re-liti
 
 ## 2026-09-05
 
+**Vestitel event ids are key-derived and day-scoped, not the finding's UUID.** The device-slow finding on Storage opened and resolved seven times in one afternoon while a copy paused and resumed, and each re-open posted a new event. Vestitel already dedupes on the id for 30 days, so `garlo-<rule>-<subject>-<yyyy-mm-dd>` makes one incident per day one inbox item without any cooldown state in Garlo. A re-open on the same day never reaches the inbox, even with changed evidence; that is the accepted cost. A cooldown in Garlo stays in reserve if a second consumer of the drop folder ever appears.
+
 **Popover rows use hysteresis and a fixed order.** Now rows appear after 2 s of activity and stay 10 s after it ends, ordered disks, link, CPU, memory. The popover holds its height while open. Reason: rows that appear, vanish and reshuffle every second are unreadable and the popover jumped under the cursor.
 
 **The helper re-registers itself after a self-update, waiting for launchd first.** Registering while launchd is still tearing down the old job reuses its record and the stale launch constraint, and the new daemon dies with "Launch Constraint Violation" (the 0.2.0 bug). The app polls until the service status leaves `.enabled`, then waits three more seconds.

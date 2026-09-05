@@ -45,3 +45,23 @@ import Foundation
         #expect(t.resolved.count == 1)
     }
 }
+
+@Suite struct AlertIDTests {
+    @Test func alertIDIsStableAcrossReopensWithinADay() {
+        let started = Date(timeIntervalSince1970: 1_788_000_000) // 2026-08-29 10:40 UTC
+        let utc = TimeZone(identifier: "UTC")!
+        let c = Candidate(rule: "deviceslow", subject: "Storage", domain: .storage, verdict: "Storage is slower than it used to be",
+                          cause: "", severity: .slow, confirmedBy: "sustained 30 s")
+        let first = Finding(candidate: c, at: started)
+        let again = Finding(candidate: c, at: started.addingTimeInterval(20 * 60))
+        #expect(first.id != again.id)
+        #expect(first.alertID(timeZone: utc) == again.alertID(timeZone: utc))
+        #expect(first.alertID(timeZone: utc) == "garlo-deviceslow-storage-2026-08-29")
+        // the next day is a new event; a subject with spaces and punctuation slugs cleanly
+        let tomorrow = Finding(candidate: c, at: started.addingTimeInterval(86_400))
+        #expect(tomorrow.alertID(timeZone: utc) == "garlo-deviceslow-storage-2026-08-30")
+        let copy = Finding(candidate: Candidate(rule: "transfer", subject: "WD Elements 2620 to Boot disk", domain: .storage,
+                                                verdict: "", cause: "", severity: .stalled, confirmedBy: "x"), at: started)
+        #expect(copy.alertID(timeZone: utc) == "garlo-transfer-wd-elements-2620-to-boot-disk-2026-08-29")
+    }
+}
