@@ -203,10 +203,22 @@ public struct TransferRule: Rule {
         }
 
         var tierHint: String?
-        if copier == nil {
+        if copier == nil, !w.helperAvailable {
             tierHint = sourceFile == nil
                 ? "Unprivileged diagnosis: the copy runs in a root helper that hides its files. Pick the file, or enable the helper."
                 : "Unprivileged diagnosis: enable the helper to attribute reads per process."
+            actions.append(Action("Enable the helper", effect: "sees root processes and per-file I/O", kind: .installHelper))
+        } else if w.helperAvailable, let io = w.fileIO, !io.samples.isEmpty {
+            // the helper's per-file view: how the busy disk's reads split
+            let mounts = Set(topo.volumes(on: busyDisk).map(\.mountPoint))
+            let onDisk = io.samples.filter { s in mounts.contains { s.path.hasPrefix($0 + "/") } }
+            let total = onDisk.map { Double($0.readBytes + $0.writeBytes) }.reduce(0, +)
+            if total > 0 {
+                var byProc: [String: Double] = [:]
+                for s in onDisk { byProc[s.name, default: 0] += Double(s.readBytes + s.writeBytes) }
+                let split = byProc.sorted { $0.value > $1.value }.prefix(3).map { "\($0.key) \(Units.percent($0.value / total))" }.joined(separator: " · ")
+                evidence.append(pad("Split") + split + " (helper, \(Int(io.seconds)) s)")
+            }
         }
 
         return Candidate(rule: id, subject: subject, domain: .storage, verdict: verdict, cause: cause,

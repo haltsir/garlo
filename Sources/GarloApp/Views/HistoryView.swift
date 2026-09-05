@@ -300,6 +300,8 @@ struct DevicePage: View {
     let range: HistoryView.Range
     let onFinding: (Finding) -> Void
 
+    @State private var smart: SMARTReport?
+
     private var baseline: RollupStore.Baseline? {
         let b = store.engine.window.baselines[lane.id]
         return (b?.busySeconds ?? 0) > 0 ? b : nil
@@ -311,6 +313,16 @@ struct DevicePage: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(lane.name).font(.system(size: 15, weight: .semibold))
                     Text(lane.detail).font(.system(size: 12)).foregroundStyle(.secondary)
+                    if let smart {
+                        Text(smart.status.map { "SMART \($0)" } ?? smart.detail)
+                            .font(.system(size: 12))
+                            .foregroundStyle(smart.status == "Verified" ? Color.ok : (smart.status == nil ? Color.secondary : Color.crit))
+                    }
+                }
+                .task(id: lane.id) {
+                    smart = nil
+                    guard lane.isDisk, store.helper.isAvailable else { return }
+                    smart = await store.helper.smart(diskID: String(lane.id.dropFirst(5)))
                 }
 
                 if lane.isDisk {

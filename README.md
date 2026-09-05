@@ -18,7 +18,7 @@ Findings open as *suspected* after ten seconds over threshold, become *confirmed
 
 ## Privileges
 
-Everything above works with no admin password and no helper. Root processes (Finder's copy helper among them) hide their open files; the card says so and offers "Pick the file" to map the layout by hand. A privileged helper for per-file I/O attribution and SMART is planned (milestone M4).
+Everything above works with no admin password and no helper. Root processes (Finder's copy helper among them) hide their open files; the card says so and offers "Pick the file" to map the layout by hand, or "Enable the helper". The optional helper is a small daemon inside the app, registered through System Settings > Login Items (one approval, no password), that answers only the signed app and only three questions: which files root processes hold open, how a disk's I/O splits per file, and what SMART says about a disk. It exits when idle and can be removed from Settings in one click.
 
 ## Build and run
 
@@ -47,4 +47,4 @@ All data stays on the Mac: one-minute rollups for 90 days in `~/Library/Applicat
 
 ## Status
 
-Milestones M1 (storage), M2 (network, CPU, memory, thermal) and M3 (history and baselines) are implemented. M4 (privileged helper) is pending a decision on code signing.
+All four milestones of the requirements are implemented: M1 storage, M2 network, CPU, memory and thermal, M3 history and baselines, M4 the privileged helper. The app self-updates from this repository's releases; every release is signed with an ed25519 key and unsigned builds are refused.

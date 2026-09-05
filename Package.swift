@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "GarloCore", targets: ["GarloCore"]),
         .executable(name: "GarloApp", targets: ["GarloApp"]),
         .executable(name: "garlo", targets: ["garlo"]),
+        .executable(name: "GarloHelper", targets: ["GarloHelper"]),
     ],
     targets: [
         // Samplers, store, rules and findings. No UI imports, so every rule
@@ -35,6 +36,13 @@ let package = Package(
             name: "garlo",
             dependencies: ["GarloCore"],
             path: "Sources/GarloCLI"
+        ),
+        // The privileged daemon (M4), bundled into Garlo.app and registered
+        // through SMAppService when the user asks for it.
+        .executableTarget(
+            name: "GarloHelper",
+            dependencies: ["GarloCore"],
+            path: "Sources/GarloHelper"
         ),
         .testTarget(
             name: "GarloCoreTests",

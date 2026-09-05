@@ -42,6 +42,16 @@ public final class Engine {
     public var foregroundPID: Int32?
     /// Host probed for round-trip time; nothing else leaves the Mac.
     public var latencyAnchor = "one.one.one.one"
+    /// The privileged helper, when installed. Its snapshot rides the next
+    /// frame so root processes get open files and counters like any other.
+    public var helper: (any PrivilegedSource)? {
+        didSet { window.helperAvailable = helper?.isAvailable ?? false }
+    }
+    private var helperInFlight = false
+    private var lastHelperSnapshot = Date.distantPast
+    private var pendingHelperSnapshot: HelperSnapshot?
+    private var previousHelperProcesses: [Int32: ProcessSample] = [:]
+    private var lastFileIO = Date.distantPast
     /// Minute rollups and baselines. Optional: the CLI runs without one.
     public var store: RollupStore? {
         didSet { loadBaselines() }
@@ -93,7 +103,10 @@ public final class Engine {
              wifi: WiFiSampler.sample(), cpu: CPUSampler.sample(), memory: MemorySampler.sample(), system: SystemSampler.sample(),
              free: TopologySampler.freeSpace())
         }.value
-        let disks = sampled.disks, procs = sampled.procs
+        let disks = sampled.disks
+        // Garlo never blames itself: its own probes and store writes are noise
+        let own = getpid()
+        var procs = sampled.procs.filter { $0.pid != own }
         if tickCount % 30 == 0 {
             window.primaryInterface = NetworkSampler.defaultRoute()?.interface
         }
@@ -138,6 +151,11 @@ public final class Engine {
 
         let latency = pendingLatency
         pendingLatency = []
+        // the helper's view of root processes merges into this frame
+        if let snap = pendingHelperSnapshot {
+            pendingHelperSnapshot = nil
+            Self.merge(snap, into: &procs, openFiles: &openFiles, ownPID: own)
+        }
         let frame = Frame(timestamp: started, disks: disks, processes: procs, openFiles: openFiles,
                           network: sampled.net, wifi: sampled.wifi, cpu: sampled.cpu, memory: sampled.memory,
                           system: sampled.system, processNet: processNet, latency: latency.isEmpty ? nil : latency,
@@ -146,8 +164,42 @@ public final class Engine {
         evaluate(frame)
         probeLayoutsIfNeeded()
         probeLatencyIfDue(at: started)
+        askHelperIfDue(at: started)
         sampleOverhead()
         rollup(at: started)
+    }
+
+    // MARK: Helper
+
+    /// Processes the app could not see itself join the frame; a listing the
+    /// app already has wins over the helper's.
+    static func merge(_ snap: HelperSnapshot, into procs: inout [ProcessSample], openFiles: inout [Int32: [OpenFile]], ownPID: Int32) {
+        let seen = Set(procs.map(\.pid))
+        procs += snap.processes.filter { !seen.contains($0.pid) && $0.pid != ownPID }
+        for (pid, files) in snap.openFiles where openFiles[pid] == nil && pid != ownPID { openFiles[pid] = files }
+    }
+
+    /// Every 5 s while a disk is busy or a storage finding is open, ask the
+    /// helper what the app cannot see; every 30 s in that state, take a
+    /// per-file I/O sample.
+    private func askHelperIfDue(at now: Date) {
+        guard let helper, helper.isAvailable, !helperInFlight else { return }
+        window.helperAvailable = true
+        let busy = latestRates.contains { $0.bytesPerSec >= StorageThresholds.transferReadBytesPerSec }
+        let storageOpen = findings.contains { $0.domain == .storage || $0.domain == .bus }
+        guard busy || storageOpen, now.timeIntervalSince(lastHelperSnapshot) >= 10 else { return }
+        lastHelperSnapshot = now
+        let wantFileIO = now.timeIntervalSince(lastFileIO) >= 30 && storageOpen
+        if wantFileIO { lastFileIO = now }
+        helperInFlight = true
+        Task { [weak self] in
+            let snap = await helper.snapshot()
+            let io = wantFileIO ? await helper.fileIO(seconds: 5) : nil
+            guard let self else { return }
+            if let snap { pendingHelperSnapshot = snap }
+            if let io { window.fileIO = io }
+            helperInFlight = false
+        }
     }
 
     // MARK: Rollups and baselines

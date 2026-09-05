@@ -258,3 +258,45 @@ enum Synthetic {
 extension Double {
     var asUInt64: UInt64 { UInt64(self) }
 }
+
+@Suite struct HelperParsingTests {
+    @Test func fsUsageLinesFoldIntoPerProcessPerFileBytes() {
+        let text = """
+        18:05:01.123456  RdData[A]   D=0x01c5f2e0  B=0x20000  /dev/disk4s2  /Volumes/Archive/movie.mkv  0.000123 W  cp.85879
+        18:05:01.223456  RdData[A]   D=0x01c5f2f0  B=0x20000  /dev/disk4s2  /Volumes/Archive/movie.mkv  0.000100 W  cp.85879
+        18:05:01.323456  WrData[A]   D=0x00000010  B=0x100000  /dev/disk3s5  /Users/user/movie.mkv  0.000300 W  cp.85879
+        18:05:01.423456  RdData[A]   D=0x00abc000  B=0x4000  /dev/disk4s2  /Volumes/Archive/seed1.mkv  0.010000 W  Torrent.64026
+        18:05:01.523456  fstat64     F=5  0.000001  Torrent.64026
+        garbage line without the shape
+        """
+        let samples = HelperWork.parseFSUsage(text)
+        #expect(samples.count == 3)
+        let cp = samples.first { $0.name == "cp" && $0.path.hasPrefix("/Volumes/Archive") }
+        #expect(cp?.readBytes == 0x40000)
+        #expect(cp?.reads == 2)
+        let dst = samples.first { $0.path == "/Users/user/movie.mkv" }
+        #expect(dst?.writeBytes == 0x100000)
+        let seed = samples.first { $0.name == "Torrent" }
+        #expect(seed?.readBytes == 0x4000)
+    }
+}
+
+@Suite struct HelperMergeTests {
+    @Test @MainActor func rootProcessesJoinTheFrameAndTheAppsOwnListingWins() {
+        var procs = [ProcessSample(pid: 10, name: "cp", bytesRead: 5, bytesWritten: 5)]
+        var files: [Int32: [OpenFile]] = [10: [OpenFile(path: "/Volumes/Archive/a.mkv", mountPoint: "/Volumes/Archive", sizeBytes: 1)]]
+        let snap = HelperSnapshot(takenAt: Date(), processes: [
+            ProcessSample(pid: 10, name: "cp", bytesRead: 1, bytesWritten: 1),           // already seen: ignored
+            ProcessSample(pid: 1, name: "ddrescue", bytesRead: 900, bytesWritten: 900),   // root: added
+            ProcessSample(pid: 99, name: "Garlo", bytesRead: 1, bytesWritten: 1),         // the app itself: never
+        ], openFiles: [
+            10: [OpenFile(path: "/Volumes/Archive/other.mkv", mountPoint: "/Volumes/Archive", sizeBytes: 1)],
+            1: [OpenFile(path: "/Volumes/Backup/image.img", mountPoint: "/Volumes/Backup", sizeBytes: 4_000_000_000)],
+        ])
+        Engine.merge(snap, into: &procs, openFiles: &files, ownPID: 99)
+        #expect(procs.map(\.name) == ["cp", "ddrescue"])
+        #expect(procs.first { $0.pid == 10 }?.bytesRead == 5)
+        #expect(files[10]?.first?.path == "/Volumes/Archive/a.mkv")
+        #expect(files[1]?.first?.path == "/Volumes/Backup/image.img")
+    }
+}

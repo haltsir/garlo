@@ -57,6 +57,14 @@ public struct ProcessSampler: Sendable {
         return out
     }
 
+    /// Effective uid of a process, nil when it is gone.
+    public static func uid(of pid: Int32) -> uid_t? {
+        var info = proc_bsdshortinfo()
+        let size = Int32(MemoryLayout<proc_bsdshortinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDT_SHORTBSDINFO, 0, &info, size) == size else { return nil }
+        return info.pbsi_uid
+    }
+
     private func allPIDs() -> [Int32] {
         let n = proc_listallpids(nil, 0)
         guard n > 0 else { return [] }

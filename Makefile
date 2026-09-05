@@ -1,5 +1,6 @@
 APP      = Garlo.app
 BINARY   = .build/release/GarloApp
+HELPER   = .build/release/GarloHelper
 CLI      = .build/release/garlo
 CONTENTS = $(APP)/Contents
 # Garlo's own stable self-signed identity (docs/SIGNING.md) keeps privacy
@@ -18,10 +19,13 @@ icon:
 
 app: build
 	rm -rf $(APP)
-	mkdir -p $(CONTENTS)/MacOS $(CONTENTS)/Resources
+	mkdir -p $(CONTENTS)/MacOS $(CONTENTS)/Resources $(CONTENTS)/Library/LaunchDaemons
 	cp $(BINARY) $(CONTENTS)/MacOS/Garlo
+	cp $(HELPER) $(CONTENTS)/MacOS/GarloHelper
+	cp Resources/com.strahil.garlo.helper.plist $(CONTENTS)/Library/LaunchDaemons/
 	cp Resources/Info.plist $(CONTENTS)/Info.plist
 	cp Resources/AppIcon.icns $(CONTENTS)/Resources/AppIcon.icns
+	codesign --force --sign "$(SIGN_IDENTITY)" --identifier com.strahil.garlo.helper $(CONTENTS)/MacOS/GarloHelper
 	codesign --force --sign "$(SIGN_IDENTITY)" $(APP)
 	@echo "Built $(APP). Run 'make run' or double-click it."
 

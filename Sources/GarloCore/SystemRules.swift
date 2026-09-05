@@ -46,6 +46,10 @@ extension Window {
     /// Per-process CPU with same-named processes (an app and its helpers,
     /// ten `yes` loops) merged, heaviest first.
     public func groupedCPURates(last seconds: Int) -> [ProcessCPURate] {
+        cache.get("grouped-\(seconds)") { computeGroupedCPURates(last: seconds) }
+    }
+
+    private func computeGroupedCPURates(last seconds: Int) -> [ProcessCPURate] {
         var byName: [String: ProcessCPURate] = [:]
         var counts: [String: Int] = [:]
         for r in processCPURates(last: seconds) {

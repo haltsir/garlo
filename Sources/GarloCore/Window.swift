@@ -20,6 +20,10 @@ public struct Window: Sendable {
     public var baselines: [String: RollupStore.Baseline] = [:]
     /// Result of the last opt-in throughput test.
     public var throughputTest: ThroughputTest.Result?
+    /// True when the privileged helper answers; rules drop their tier hints.
+    public var helperAvailable = false
+    /// The helper's latest per-file I/O sample, when one was taken.
+    public var fileIO: FileIOReport?
     /// Name of the interface with the default route, when known.
     public var primaryInterface: String?
 
@@ -28,8 +32,25 @@ public struct Window: Sendable {
         self.topology = topology
     }
 
+    /// Rate tables several rules ask for on the same tick, computed once.
+    /// Reset on every append; the box is a class so non-mutating reads fill it.
+    public final class Cache: @unchecked Sendable {
+        private let lock = NSLock()
+        private var tables: [String: Any] = [:]
+        public func get<T>(_ key: String, _ make: () -> T) -> T {
+            lock.lock()
+            if let hit = tables[key] as? T { lock.unlock(); return hit }
+            lock.unlock()
+            let value = make()
+            lock.lock(); tables[key] = value; lock.unlock()
+            return value
+        }
+    }
+    public private(set) var cache = Cache()
+
     public mutating func append(_ frame: Frame) {
         frames.append(frame)
+        cache = Cache()
         footprints.record(frame)
         if frames.count > capacity { frames.removeFirst(frames.count - capacity) }
         for (pid, files) in frame.openFiles { openFiles[pid] = files }
@@ -70,6 +91,10 @@ public struct Window: Sendable {
 
     /// Average rate of every process over the last `seconds` frames.
     public func processRates(last seconds: Int) -> [ProcessRate] {
+        cache.get("proc-\(seconds)") { computeProcessRates(last: seconds) }
+    }
+
+    private func computeProcessRates(last seconds: Int) -> [ProcessRate] {
         guard frames.count >= 2 else { return [] }
         let slice = Array(frames.suffix(seconds + 1))
         guard let first = slice.first, let last = slice.last, first.timestamp < last.timestamp else { return [] }
@@ -220,6 +245,10 @@ extension Window {
 
     /// Per-process CPU over the last `seconds` frames, heaviest first.
     public func processCPURates(last seconds: Int) -> [ProcessCPURate] {
+        cache.get("cpu-\(seconds)") { computeProcessCPURates(last: seconds) }
+    }
+
+    private func computeProcessCPURates(last seconds: Int) -> [ProcessCPURate] {
         let slice = Array(frames.suffix(seconds + 1))
         guard let first = slice.first, let last = slice.last, first.timestamp < last.timestamp else { return [] }
         let dt = last.timestamp.timeIntervalSince(first.timestamp)

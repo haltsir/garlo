@@ -56,6 +56,7 @@ struct PersistedState: Codable {
 @Observable @MainActor
 final class AppStore {
     let engine = Engine()
+    let helper = HelperClient()
     var settings = Settings() {
         didSet {
             guard settings != oldValue else { return }
@@ -103,6 +104,7 @@ final class AppStore {
     init() {
         load()
         engine.onEvent = { [weak self] event in self?.handle(event) }
+        engine.helper = helper
         engine.store = try? RollupStore(url: Self.stateDirectory.appendingPathComponent("history.sqlite"))
         engine.retentionDays = settings.historyDays
         engine.latencyAnchor = settings.latencyAnchor
@@ -113,12 +115,15 @@ final class AppStore {
             Task { @MainActor in self?.engine.foregroundPID = pid }
         }
         engine.start()
+        let updated = lastRunVersion != nil && lastRunVersion != currentAppVersion
         noteVersionChange()
+        if updated { helper.reregisterAfterUpdate() }
         // housekeeping every 30 s: the daily update check and a staged install
         Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
                 self?.maybeRunDailyUpdateCheck()
+                self?.helper.refresh()
             }
         }
     }
@@ -231,6 +236,8 @@ final class AppStore {
             engine.resetBaseline(resource)
         case .throughputTest:
             runThroughputTest()
+        case .installHelper:
+            helper.install()
         case .pickSource(let subject):
             let panel = NSOpenPanel()
             panel.canChooseFiles = true

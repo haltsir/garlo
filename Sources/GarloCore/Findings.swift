@@ -37,6 +37,7 @@ public struct Action: Codable, Sendable, Hashable, Identifiable {
         case pickSource(subject: String)
         case resetBaseline(resource: String)
         case throughputTest
+        case installHelper
     }
     public var id: String { title }
     public var title: String

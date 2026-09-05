@@ -22,8 +22,18 @@ struct SettingsView: View {
                     toggleRow("Redact file paths", hint: "Keep volume names, drop paths, in events and exports", $store.settings.redactPaths)
                 }
                 group("Privileged helper") {
-                    row("Not available yet", hint: "Adds per-file I/O attribution, root process file lists and SMART. Garlo diagnoses without it; the helper (M4) adds precision.") {
-                        Button("Install") {}.disabled(true)
+                    row(store.helper.state.label + (store.helper.state == .installed ? (store.helper.reachable ? ", answering" : ", not answering yet") : ""),
+                        hint: store.helper.lastError ?? "Sees root processes' files and counters, samples per-file I/O, reads SMART where the bridge allows it. Garlo diagnoses without it; the helper adds precision. Runs as root only while asked.") {
+                        switch store.helper.state {
+                        case .installed:
+                            Button("Remove") { store.helper.remove() }
+                        case .needsApproval:
+                            Button("Open Login Items") { SMAppService.openSystemSettingsLoginItems() }
+                        case .notFound:
+                            Button("Install") {}.disabled(true)
+                        default:
+                            Button("Install") { store.helper.install() }
+                        }
                     }
                 }
                 group("History") {
