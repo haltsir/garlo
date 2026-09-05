@@ -85,7 +85,14 @@ final class HelperClient: PrivilegedSource {
         connection = nil
         try? service.unregister()
         Task { [weak self] in
-            try? await Task.sleep(for: .seconds(4))
+            // launchd gives the old daemon a few seconds to exit; registering
+            // before the job is gone reuses its record and the stale constraint
+            for _ in 0..<20 {
+                try? await Task.sleep(for: .seconds(1))
+                guard let self else { return }
+                if service.status != .enabled { break }
+            }
+            try? await Task.sleep(for: .seconds(3))
             guard let self else { return }
             do { try service.register() } catch { lastError = error.localizedDescription }
             refresh()
