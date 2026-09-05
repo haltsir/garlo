@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #1F6F78; text-decoration: none; } a:hover { color: #175860; }
+    .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+    .group { background: #FFFFFF; border-radius: 8px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.12); display: flex; flex-direction: column; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; min-height: 44px; }
+    .row + .row { border-top: 1px solid rgba(0,0,0,0.08); }
+    .label { font-size: 13px; }
+    .hint { font-size: 11px; color: #6E6E73; margin-top: 2px; }
+    .on { width: 38px; height: 22px; border-radius: 11px; background: #1F6F78; position: relative; flex-shrink: 0; }
+    .on::after { content: ""; position: absolute; right: 2px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    .off { width: 38px; height: 22px; border-radius: 11px; background: rgba(0,0,0,0.18); position: relative; flex-shrink: 0; }
+    .off::after { content: ""; position: absolute; left: 2px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    .h { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73; padding: 0 2px; margin-bottom: 6px; }
+    .pop { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 8px 4px 10px; background: #FFFFFF; border-radius: 6px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.18); white-space: nowrap; }
+    .btn { font-size: 12px; font-weight: 500; padding: 5px 10px; border-radius: 6px; background: #FFFFFF; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.18); white-space: nowrap; }
+    .btnP { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 6px; background: #1F6F78; color: #FFFFFF; white-space: nowrap; }
+  </style>
+</helmet>
+<div style="width: 520px; height: 900px; background: #F3F3F5; color: #1D1D1F; border-radius: 10px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2), 0 20px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; font-size: 13px;">
+
+  <div style="display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 52px; background: #ECECEE; border-bottom: 1px solid rgba(0,0,0,0.12);">
+    <div style="display: flex; gap: 8px;"><div style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></div><div style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></div><div style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></div></div>
+    <div style="font-weight: 600; font-size: 13px;">Garlo Settings</div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 18px;">
+
+    <div>
+      <div class="h">Notifications</div>
+      <div class="group">
+        <div class="row"><div><div class="label">Storage transfers</div><div class="hint">Confirmed slow or stalled findings on a copy you are waiting for</div></div><div class="on"></div></div>
+        <div class="row"><div><div class="label">Network</div></div><div class="off"></div></div>
+        <div class="row"><div><div class="label">CPU and thermal</div></div><div class="off"></div></div>
+        <div class="row"><div><div class="label">Memory</div></div><div class="off"></div></div>
+      </div>
+      <div class="hint" style="padding: 6px 2px 0 2px;">Only confirmed findings of severity slow or stalled ever notify. Suspected findings wait in the popover.</div>
+    </div>
+
+    <div>
+      <div class="h">Vestitel</div>
+      <div class="group">
+        <div class="row"><div><div class="label">Send findings to Vestitel</div><div class="hint">Confirmed findings land in your inbox as events, not just banners</div></div><div class="on"></div></div>
+        <div class="row"><div><div class="label">Redact file paths</div><div class="hint">Keep volume names, drop paths, in events and exports</div></div><div class="off"></div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="h">Privileged helper</div>
+      <div class="group">
+        <div class="row">
+          <div><div class="label">Not installed</div><div class="hint">Adds per-file I/O attribution, root process file lists and SMART. Garlo diagnoses without it; the helper adds precision.</div></div>
+          <div class="btnP">Install</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="h">History</div>
+      <div class="group">
+        <div class="row"><div><div class="label">Keep history for</div><div class="hint">1-minute rollups; the last 60 s are kept at full resolution</div></div><div class="pop">90 days <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div></div>
+        <div class="row"><div><div class="label">Latency anchor</div><div class="hint">The one host Garlo probes for round-trip time. Nothing else leaves this Mac.</div></div><div class="mono" style="font-size: 12px; padding: 4px 8px; background: #FFFFFF; border-radius: 6px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.18);">one.one.one.one</div></div>
+        <div class="row"><div><div class="label">Clear history</div><div class="hint">Findings, samples and learned baselines</div></div><div class="btn">Clear…</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="h">Garlo itself</div>
+      <div class="group">
+        <div class="row"><div><div class="label">Overhead now</div><div class="hint">Measured by Garlo's own samplers, judged by the same rules</div></div><div class="mono" style="font-size: 12px; color: #2E7D4F;">0.4% CPU · 38 MB</div></div>
+        <div class="row"><div><div class="label">Launch at login</div></div><div class="on"></div></div>
+        <div class="row"><div><div class="label">Check for updates automatically</div><div class="hint">Version 0.1 · last checked today 12:30</div></div><div class="on"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #1F6F78; } a:hover { color: #175860; }
+  </style>
+</helmet>
+<div style="width: 440px; height: 200px; background: #FFFFFF; color: #1D1D1F; padding: 20px; display: flex; flex-direction: column; gap: 16px; font-size: 12px; box-sizing: border-box;">
+  <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73;">Menu bar icon states (template image, 18 pt, never animates)</div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+      <div style="width: 120px; height: 28px; background: linear-gradient(#EDEDEF, #E3E3E6); border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D1D1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v5c0 3-3 4-3 7v6H9v-6c0-3-3-4-3-7V3z"></path><path d="M9 21h6"></path></svg>
+        <span style="font-size: 13px; font-weight: 500;">15:41</span>
+      </div>
+      <div style="font-weight: 600;">At rest</div>
+      <div style="color: #6E6E73; text-align: center;">Monochrome. No open findings.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+      <div style="width: 120px; height: 28px; background: linear-gradient(#EDEDEF, #E3E3E6); border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15);">
+        <div style="position: relative; width: 18px; height: 18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D1D1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v5c0 3-3 4-3 7v6H9v-6c0-3-3-4-3-7V3z"></path><path d="M9 21h6"></path></svg>
+          <div style="position: absolute; right: -3px; top: -2px; width: 7px; height: 7px; border-radius: 50%; background: #E08A1E; box-shadow: 0 0 0 1.5px #E8E8EA;"></div>
+        </div>
+        <span style="font-size: 13px; font-weight: 500;">15:41</span>
+      </div>
+      <div style="font-weight: 600;">Slow</div>
+      <div style="color: #6E6E73; text-align: center;">Amber dot. An open finding of severity slow.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+      <div style="width: 120px; height: 28px; background: linear-gradient(#EDEDEF, #E3E3E6); border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15);">
+        <div style="position: relative; width: 18px; height: 18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D1D1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v5c0 3-3 4-3 7v6H9v-6c0-3-3-4-3-7V3z"></path><path d="M9 21h6"></path></svg>
+          <div style="position: absolute; right: -3px; top: -2px; width: 7px; height: 7px; border-radius: 50%; background: #D3392F; box-shadow: 0 0 0 1.5px #E8E8EA;"></div>
+        </div>
+        <span style="font-size: 13px; font-weight: 500;">15:41</span>
+      </div>
+      <div style="font-weight: 600;">Stalled</div>
+      <div style="color: #6E6E73; text-align: center;">Red dot. An open finding of severity stalled.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

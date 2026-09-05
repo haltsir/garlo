@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #1F6F78; text-decoration: none; } a:hover { color: #175860; }
+    .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+    .lane { display: grid; grid-template-columns: 120px minmax(0, 1fr) 96px; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.08); min-height: 56px; }
+    .lane:hover { background: rgba(0,0,0,0.025); }
+    .laneName { font-weight: 600; font-size: 13px; }
+    .laneSub { font-size: 11px; color: #6E6E73; }
+    .laneVal { text-align: right; font-size: 12px; }
+    .seg { font-size: 12px; padding: 3px 10px; border-radius: 5px; color: #1D1D1F; }
+    .segOn { background: #FFFFFF; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.12); font-weight: 600; }
+    .kv { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 10px; font-size: 12px; }
+    .kv dt { color: #6E6E73; margin: 0; }
+    .kv dd { margin: 0; }
+  </style>
+</helmet>
+<div style="width: 960px; height: 620px; background: #F6F6F7; color: #1D1D1F; border-radius: 10px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2), 0 20px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; font-size: 13px;">
+
+  <div style="display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 52px; background: #ECECEE; border-bottom: 1px solid rgba(0,0,0,0.12);">
+    <div style="display: flex; gap: 8px;"><div style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></div><div style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></div><div style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></div></div>
+    <div style="font-weight: 600; font-size: 13px;">History</div>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; gap: 2px; background: rgba(0,0,0,0.06); border-radius: 7px; padding: 2px;">
+      <div class="seg">24 h</div><div class="seg segOn">7 days</div><div class="seg">30 days</div><div class="seg">90 days</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 8px 4px 10px; background: #FFFFFF; border-radius: 6px; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.18);">All resources <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 320px; flex-grow: 1; min-height: 0;">
+
+    <div style="display: flex; flex-direction: column; overflow: auto; border-right: 1px solid rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 96px; gap: 12px; padding: 8px 16px 4px 16px; font-size: 10.5px; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">
+        <div>Resource</div>
+        <div style="display: flex; justify-content: space-between;"><span>30 Aug</span><span>1 Sep</span><span>3 Sep</span><span>5 Sep</span></div>
+        <div style="text-align: right;">Now</div>
+      </div>
+
+      <div class="lane" style="background: rgba(31,111,120,0.06);">
+        <div><div class="laneName">Archive</div><div class="laneSub">RAID Enclosure · rotational RAID</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,30 30,29 60,31 90,28 120,30 150,27 180,29 210,30 240,26 270,29 300,30 330,28 360,29 390,30 420,25 450,29 480,30 510,12 540,10 570,11 600,30"></polyline></svg>
+          <div style="position: absolute; left: 84.5%; top: 2px; width: 14%; height: 8px; border-radius: 2px; background: #A8640A; opacity: 0.9;" title="Copy is read-bound"></div>
+          <div style="position: absolute; left: 63%; top: 2px; width: 3%; height: 8px; border-radius: 2px; background: #A8640A; opacity: 0.6;" title="Contention"></div>
+        </div>
+        <div class="laneVal mono">12.7 MB/s<br><span style="color: #A8640A;">201 ops/s</span></div>
+      </div>
+
+      <div class="lane">
+        <div><div class="laneName">Backup</div><div class="laneSub">RAID Enclosure · rotational RAID</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,31 30,31 60,30 90,31 120,29 150,31 180,31 210,30 240,31 270,22 300,31 330,31 360,30 390,31 420,31 450,30 480,31 510,20 540,19 570,20 600,31"></polyline></svg>
+        </div>
+        <div class="laneVal mono">8.0 MB/s<br><span style="color: #6E6E73;">32 ops/s</span></div>
+      </div>
+
+      <div class="lane">
+        <div><div class="laneName">Boot disk</div><div class="laneSub">Apple SSD · internal</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,31 30,29 60,30 90,31 120,28 150,30 180,26 210,30 240,31 270,29 300,30 330,24 360,30 390,31 420,29 450,30 480,31 510,30 540,29 570,30 600,31"></polyline></svg>
+        </div>
+        <div class="laneVal mono">1.2 MB/s<br><span style="color: #6E6E73;">idle</span></div>
+      </div>
+
+      <div class="lane">
+        <div><div class="laneName">Wi-Fi</div><div class="laneSub">en0 · 866 Mb/s · 5 GHz</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,30 30,28 60,30 90,31 120,27 150,30 180,29 210,31 240,28 270,30 300,29 330,31 360,29 390,30 420,28 450,30 480,29 510,27 540,28 570,27 600,29"></polyline></svg>
+          <div style="position: absolute; left: 20%; top: 2px; width: 5%; height: 8px; border-radius: 2px; background: #A8640A; opacity: 0.6;" title="Wi-Fi is the limit"></div>
+        </div>
+        <div class="laneVal mono">3.5 MB/s up<br><span style="color: #6E6E73;">4 ms</span></div>
+      </div>
+
+      <div class="lane">
+        <div><div class="laneName">CPU</div><div class="laneSub">M2 · 4P + 4E</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,29 30,27 60,30 90,28 120,26 150,29 180,30 210,27 240,29 270,28 300,30 330,26 360,29 390,28 420,30 450,27 480,29 510,26 540,28 570,27 600,29"></polyline></svg>
+        </div>
+        <div class="laneVal mono">9%<br><span style="color: #6E6E73;">100% speed</span></div>
+      </div>
+
+      <div class="lane">
+        <div><div class="laneName">Memory</div><div class="laneSub">16 GB</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,22 30,22 60,21 90,22 120,20 150,21 180,21 210,20 240,21 270,19 300,21 330,20 360,20 390,21 420,19 450,20 480,20 510,21 540,20 570,21 600,20"></polyline></svg>
+        </div>
+        <div class="laneVal mono">normal<br><span style="color: #6E6E73;">0 page-outs</span></div>
+      </div>
+
+      <div class="lane" style="border-bottom: 0;">
+        <div><div class="laneName">Thermal</div><div class="laneSub">nominal</div></div>
+        <div style="position: relative; height: 36px;">
+          <svg width="100%" height="36" viewBox="0 0 600 36" preserveAspectRatio="none"><polyline fill="none" stroke="#1F6F78" stroke-width="1.5" points="0,31 30,31 60,31 90,31 120,31 150,31 180,31 210,31 240,31 270,31 300,31 330,31 360,31 390,31 420,31 450,31 480,31 510,31 540,31 570,31 600,31"></polyline></svg>
+        </div>
+        <div class="laneVal mono">nominal<br><span style="color: #6E6E73;">100% speed</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: auto; background: #FFFFFF;">
+      <div>
+        <div style="font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Archive</div>
+        <div style="font-size: 12px; color: #6E6E73;">RAID Enclosure · USB 3.2 Gen 1 · 5 Gb/s negotiated</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73;">Learned baseline</div>
+        <dl class="kv" style="margin: 0;">
+          <dt>Service time</dt><dd class="mono">9 ms per op</dd>
+          <dt>Sequential read</dt><dd class="mono">184 MB/s</dd>
+          <dt>Sequential write</dt><dd class="mono">171 MB/s</dd>
+          <dt>Link ceiling</dt><dd class="mono">5 Gb/s · about 400 MB/s</dd>
+          <dt>Learned</dt><dd>11 Aug, 10 min of activity</dd>
+        </dl>
+        <a href="#" style="font-size: 12px;">Reset baseline</a>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73;">Trend, write service time</div>
+        <svg width="100%" height="64" viewBox="0 0 288 64" preserveAspectRatio="none"><line x1="0" y1="44" x2="288" y2="44" stroke="#D7DEE5" stroke-dasharray="3 3"></line><polyline fill="none" stroke="#A8640A" stroke-width="2" points="0,44 48,43 96,42 144,40 192,36 240,31 288,28"></polyline></svg>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #6E6E73;"><span>July</span><span>This week</span></div>
+        <div style="font-size: 13px; line-height: 1.45;"><strong>Writes are 40 percent slower than in July.</strong> 12.6 ms per op this week against a 9 ms baseline, with queue depth accounted for.</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73;">Findings on this device</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 8px 10px; border-radius: 6px; background: #F3F3F5; border-left: 3px solid #A8640A;"><span style="font-weight: 600;">Copy is read-bound</span><span class="mono" style="color: #6E6E73;">5 Sep 13:50</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 8px 10px; border-radius: 6px; background: #F3F3F5; border-left: 3px solid #A8640A;"><span style="font-weight: 600;">Two apps contend for Archive</span><span class="mono" style="color: #6E6E73;">2 Sep 21:14</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 8px 10px; border-radius: 6px; background: #F3F3F5; border-left: 3px solid #B9C3CD;"><span style="font-weight: 600;">Archive is 88 percent full</span><span class="mono" style="color: #6E6E73;">notice</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

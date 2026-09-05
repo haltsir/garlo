@@ -1,0 +1,6 @@
+.build/
+Garlo.app/
+*.xcodeproj
+.DS_Store
+Tools/scrub-renames.json
+design/garlo-screens.html

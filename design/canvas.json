@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "MenuBar.dc.html", "x": 0, "y": 0, "w": 440, "h": 200, "title": "Menu bar icon" },
+    { "file": "Main.dc.html", "x": 0, "y": 320, "w": 440, "h": 620, "title": "Popover, active" },
+    { "file": "PopoverIdle.dc.html", "x": 0, "y": 1060, "w": 440, "h": 300, "title": "Popover, idle" },
+    { "file": "FindingCards.dc.html", "x": 540, "y": 320, "w": 440, "h": 760, "title": "Finding card states" },
+    { "file": "History.dc.html", "x": 1080, "y": 0, "w": 960, "h": 620, "title": "History window" },
+    { "file": "Settings.dc.html", "x": 1080, "y": 740, "w": 520, "h": 900, "title": "Settings" }
+  ],
+  "annotations": [
+    { "id": "direction", "x": 540, "y": 0, "w": 420, "text": "Direction: native macOS, matching Vestitel (system font, 14 px paddings, white cards on the popover material). Accent teal, amber for slow, red for stalled, from the PRD. Static mockups. Dark mode follows the system palette; drafted in light." }
+  ],
+  "launch": { "view": "canvas" }
+}
