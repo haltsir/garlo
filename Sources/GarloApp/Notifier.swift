@@ -39,6 +39,16 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate, @unchecked Sen
         }
     }
 
+    /// One quiet note after a self-update relaunched the app.
+    func postUpdated(version: String) {
+        guard available else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Garlo updated"
+        content.body = "Now running version \(version)."
+        content.sound = nil
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "updated-\(version)", content: content, trigger: nil))
+    }
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         [.banner, .list]
     }

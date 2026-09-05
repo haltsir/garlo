@@ -87,9 +87,14 @@ struct SettingsView: View {
                                 catch { launchAtLogin = SMAppService.mainApp.status == .enabled }
                             }
                     }
-                    row("Version", hint: "Updates arrive with the first release") {
-                        Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")
-                            .foregroundStyle(.secondary)
+                    toggleRow("Check for updates daily", hint: "Version \(store.currentAppVersion ?? "dev") · from GitHub releases; only builds signed with Garlo's release key are installed", $store.settings.autoUpdateEnabled)
+                    row("Updates", hint: store.updateStatus.isEmpty ? (store.lastUpdateCheck.map { "Last checked \(Units.clock($0))" } ?? "Not checked yet") : store.updateStatus) {
+                        if store.stagedUpdatePath != nil {
+                            Button("Install Now") { store.installStagedUpdateIfIdle(force: true) }
+                        } else {
+                            Button("Check Now") { store.startUpdateCheck(manual: true) }
+                                .disabled(store.updaterTask != nil || !store.updaterAvailable)
+                        }
                     }
                 }
             }

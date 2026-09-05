@@ -43,7 +43,7 @@ The command-line front end runs the same core:
 
 ## Privacy
 
-All data stays on the Mac: one-minute rollups for 90 days in `~/Library/Application Support/Garlo/history.sqlite`, findings in `state.json`. The only network calls are a round-trip probe to the gateway and to the anchor host you configure, timed DNS lookups, and the throughput test you start yourself.
+All data stays on the Mac: one-minute rollups for 90 days in `~/Library/Application Support/Garlo/history.sqlite`, findings in `state.json`. The only network calls are a round-trip probe to the gateway and to the anchor host you configure, timed DNS lookups, the throughput test you start yourself, and a daily check of this repository's releases for updates (which can be turned off). Updates are only installed when their signature verifies against the release key built into the app.
 
 ## Status
 

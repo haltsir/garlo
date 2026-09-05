@@ -13,6 +13,7 @@ struct Settings: Codable, Equatable {
     var historyDays = 90
     var latencyAnchor = "one.one.one.one"
     var throughputURL = "https://speed.cloudflare.com/__down?bytes=200000000"
+    var autoUpdateEnabled = true
 
     init() {}
 
@@ -28,6 +29,7 @@ struct Settings: Codable, Equatable {
         historyDays = try c.decodeIfPresent(Int.self, forKey: .historyDays) ?? 90
         latencyAnchor = try c.decodeIfPresent(String.self, forKey: .latencyAnchor) ?? "one.one.one.one"
         throughputURL = try c.decodeIfPresent(String.self, forKey: .throughputURL) ?? "https://speed.cloudflare.com/__down?bytes=200000000"
+        autoUpdateEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoUpdateEnabled) ?? true
     }
 
     func notifies(_ domain: Domain) -> Bool {
@@ -43,6 +45,10 @@ struct Settings: Codable, Equatable {
 struct PersistedState: Codable {
     var settings: Settings?
     var resolved: [Finding]?
+    var lastUpdateCheck: Date?
+    var lastRunVersion: String?
+    var stagedUpdatePath: String?
+    var stagedUpdateVersion: String?
 }
 
 /// The one observable object behind the UI. Owns the engine, settings,
@@ -58,7 +64,19 @@ final class AppStore {
             save()
         }
     }
-    var popoverOpen = false
+    var popoverOpen = false {
+        didSet {
+            // a staged update installs the moment the popover closes
+            if !popoverOpen, oldValue { installStagedUpdateIfIdle() }
+        }
+    }
+    // Self-update state (Updater.swift)
+    var updateStatus = ""
+    var lastUpdateCheck: Date?
+    var lastRunVersion: String?
+    var stagedUpdatePath: String?
+    var stagedUpdateVersion: String?
+    var updaterTask: Task<Void, Never>?
     /// Resolved findings from earlier runs plus this one, newest first.
     private(set) var history: [Finding] = []
     var layoutSheet: LayoutRequest?
@@ -95,7 +113,18 @@ final class AppStore {
             Task { @MainActor in self?.engine.foregroundPID = pid }
         }
         engine.start()
+        noteVersionChange()
+        // housekeeping every 30 s: the daily update check and a staged install
+        Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(30))
+                self?.maybeRunDailyUpdateCheck()
+            }
+        }
     }
+
+    /// Persist without going through a settings change.
+    func saveState() { save() }
 
     // MARK: Derived
 
@@ -271,6 +300,10 @@ final class AppStore {
         decoder.dateDecodingStrategy = .iso8601
         guard let state = try? decoder.decode(PersistedState.self, from: data) else { return }
         history = state.resolved ?? []
+        lastUpdateCheck = state.lastUpdateCheck
+        lastRunVersion = state.lastRunVersion
+        stagedUpdatePath = state.stagedUpdatePath
+        stagedUpdateVersion = state.stagedUpdateVersion
         prune()
         // settings last: its didSet saves
         settings = state.settings ?? Settings()
@@ -280,7 +313,9 @@ final class AppStore {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        guard let data = try? encoder.encode(PersistedState(settings: settings, resolved: history)) else { return }
+        guard let data = try? encoder.encode(PersistedState(settings: settings, resolved: history, lastUpdateCheck: lastUpdateCheck,
+                                                            lastRunVersion: lastRunVersion, stagedUpdatePath: stagedUpdatePath,
+                                                            stagedUpdateVersion: stagedUpdateVersion)) else { return }
         try? FileManager.default.createDirectory(at: Self.stateDirectory, withIntermediateDirectories: true)
         try? data.write(to: stateURL, options: .atomic)
     }

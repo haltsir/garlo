@@ -4,3 +4,6 @@ Garlo.app/
 .DS_Store
 Tools/scrub-renames.json
 design/garlo-screens.html
+release-notes.md
+*.zip
+*.zip.sig
