@@ -16,6 +16,7 @@ let package = Package(
         .target(
             name: "GarloCore",
             path: "Sources/GarloCore",
+            exclude: ["CLAUDE.md"],
             linkerSettings: [
                 .linkedFramework("IOKit"),
                 .linkedFramework("DiskArbitration"),
@@ -28,26 +29,30 @@ let package = Package(
         .executableTarget(
             name: "GarloApp",
             dependencies: ["GarloCore"],
-            path: "Sources/GarloApp"
+            path: "Sources/GarloApp",
+            exclude: ["CLAUDE.md"]
         ),
         // Command-line front end over the same core: live sampling,
         // fixture capture and replay.
         .executableTarget(
             name: "garlo",
             dependencies: ["GarloCore"],
-            path: "Sources/GarloCLI"
+            path: "Sources/GarloCLI",
+            exclude: ["CLAUDE.md"]
         ),
         // The privileged daemon (M4), bundled into Garlo.app and registered
         // through SMAppService when the user asks for it.
         .executableTarget(
             name: "GarloHelper",
             dependencies: ["GarloCore"],
-            path: "Sources/GarloHelper"
+            path: "Sources/GarloHelper",
+            exclude: ["CLAUDE.md"]
         ),
         .testTarget(
             name: "GarloCoreTests",
             dependencies: ["GarloCore"],
             path: "Tests/GarloCoreTests",
+            exclude: ["CLAUDE.md"],
             resources: [.copy("Fixtures")]
         ),
     ]

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(swift build:*)",
+      "Bash(swift test:*)",
+      "Bash(swift package clean)",
+      "Bash(make app)",
+      "Bash(make build)",
+      "Bash(make test)",
+      "Bash(make cli)",
+      "Bash(make icon)",
+      "Bash(.build/debug/garlo:*)",
+      "Bash(.build/release/garlo:*)",
+      "Bash(python3 Tools/scrub-fixture.py:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(/usr/libexec/PlistBuddy -c \"Print:*)",
+      "Bash(security find-identity:*)"
+    ],
+    "deny": [
+      "Bash(make release:*)",
+      "Bash(git push:*)",
+      "Bash(gh release:*)",
+      "Read(~/.config/garlo/release-key)"
+    ]
+  }
+}

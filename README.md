@@ -41,6 +41,10 @@ The command-line front end runs the same core:
 .build/debug/garlo replay out.json      # run it through the rules
 ```
 
+## Documentation
+
+[User guide](docs/USER-GUIDE.md) for reading what the app says. [Advanced guide](docs/ADVANCED.md) for the command line, fixtures, the helper and releases. [Rule catalogue](docs/RULES.md) for every finding with its thresholds. [Decision log](docs/DECISIONS.md) for why. [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) for anyone changing the code.
+
 ## Privacy
 
 All data stays on the Mac: one-minute rollups for 90 days in `~/Library/Application Support/Garlo/history.sqlite`, findings in `state.json`. The only network calls are a round-trip probe to the gateway and to the anchor host you configure, timed DNS lookups, the throughput test you start yourself, and a daily check of this repository's releases for updates (which can be turned off). Updates are only installed when their signature verifies against the release key built into the app.

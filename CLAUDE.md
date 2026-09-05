@@ -75,3 +75,10 @@ Samplers (1 Hz) -> `Window` (60 s ring at full resolution) -> rules (pure functi
 - Every rule change gets a fixture. Record with `garlo record` during a real incident (a `cp` of a torrent-downloaded file from Archive to the boot disk reproduces the read-bound case in under a minute), keep the fixture under `Tests/GarloCoreTests/Fixtures/`, and assert the verdict, not the numbers.
 - A recording carries every open-file path and process name on the machine. Always run `python3 Tools/scrub-fixture.py <fixture>` before a fixture is committed: paths become `file-N` placeholders under their volume root, process names outside a short allowlist become `app-N`. Never publish a raw recording.
 - Sampling budget: under 20 ms per tick, under 1 percent of a core, under 60 MB. The Settings window shows the live numbers.
+
+## Where to read more
+
+- `AGENTS.md`: read order, invariants, recipes and the done checklist for agents and new contributors.
+- A `CLAUDE.md` in each source directory (`Sources/GarloCore`, `Sources/GarloApp`, `Sources/GarloCLI`, `Sources/GarloHelper`, `Tests/GarloCoreTests`, `Tools`, `design`, `docs`) with the file map and the rules of that directory.
+- `.claude/rules/`: copy, fixtures, Swift, signing and release, helper, budget and privacy. Some are scoped to paths.
+- `docs/USER-GUIDE.md` for what the user sees, `docs/ADVANCED.md` for the CLI, state, helper and releases, `docs/RULES.md` for every rule with thresholds and tests, `docs/DECISIONS.md` for why things are the way they are. Change the matching document in the same commit as the code.
