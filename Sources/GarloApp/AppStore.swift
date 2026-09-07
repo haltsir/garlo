@@ -14,6 +14,8 @@ struct Settings: Codable, Equatable {
     var latencyAnchor = "one.one.one.one"
     var throughputURL = "https://speed.cloudflare.com/__down?bytes=200000000"
     var autoUpdateEnabled = true
+    /// Now lists every disk, the link, CPU and memory even while idle.
+    var showAllNow = true
 
     init() {}
 
@@ -30,6 +32,7 @@ struct Settings: Codable, Equatable {
         latencyAnchor = try c.decodeIfPresent(String.self, forKey: .latencyAnchor) ?? "one.one.one.one"
         throughputURL = try c.decodeIfPresent(String.self, forKey: .throughputURL) ?? "https://speed.cloudflare.com/__down?bytes=200000000"
         autoUpdateEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoUpdateEnabled) ?? true
+        showAllNow = try c.decodeIfPresent(Bool.self, forKey: .showAllNow) ?? true
     }
 
     func notifies(_ domain: Domain) -> Bool {
@@ -163,6 +166,9 @@ final class AppStore {
         var fraction: Double
         var label: String
         var hot: Bool
+        /// The resource is doing something right now; idle rows are listed
+        /// only when the user wants every resource shown.
+        var active = true
     }
 
     /// The rows the popover shows: `rawNowItems` with hysteresis (a row
@@ -200,42 +206,69 @@ final class AppStore {
         nowItems = order.compactMap { nowShown[$0] }
     }
 
-    /// One row per busy resource right now, before hysteresis.
+    /// One row per resource right now, before hysteresis: only the busy ones,
+    /// or every disk, the link, CPU and memory when `showAllNow` is on.
     var rawNowItems: [NowItem] {
+        let all = settings.showAllNow
         var items: [NowItem] = []
         let w = engine.window
-        for r in busyDisks {
-            let side = r.readBytesPerSec >= r.writeBytesPerSec ? "read \(Units.rate(r.readBytesPerSec))" : "write \(Units.rate(r.writeBytesPerSec))"
-            items.append(NowItem(id: "disk-\(r.id)", name: engine.topology.displayName(forDisk: r.id),
-                                 figure: "\(side) · \(Units.ops(r.opsPerSec)) · \(Units.ms(r.serviceMsPerOp))",
-                                 fraction: r.busy,
-                                 label: r.queueDepth >= 1.5 ? "queue \(Int(r.queueDepth))" : "busy \(Int(r.busy * 100))%",
-                                 hot: r.busy > 0.8))
+        if all {
+            for d in engine.topology.disks {
+                items.append(diskRow(d.id, engine.latestRates.first { $0.id == d.id }))
+            }
+        } else {
+            for r in busyDisks { items.append(diskRow(r.id, r)) }
         }
-        if let n = w.primaryRate, n.bytesPerSec >= 300_000 || (n.utilisation ?? 0) >= 0.1 {
+        if let n = w.primaryRate {
             let util = n.utilisation ?? 0
-            let side = n.outBytesPerSec >= n.inBytesPerSec ? "up \(Units.rate(n.outBytesPerSec))" : "down \(Units.rate(n.inBytesPerSec))"
-            let top = w.processNetRates(last: 5).first.map { " · \($0.name)" } ?? ""
-            items.append(NowItem(id: "net", name: w.interfaceLabel(n.name),
-                                 figure: "\(side)\(top) · \(n.baudrate / 1_000_000) Mb/s link",
-                                 fraction: util, label: "\(Int(util * 100))% of link", hot: util > 0.85))
+            let active = n.bytesPerSec >= 300_000 || util >= 0.1
+            if all || active {
+                let side = n.outBytesPerSec >= n.inBytesPerSec ? "up \(Units.rate(n.outBytesPerSec))" : "down \(Units.rate(n.inBytesPerSec))"
+                let top = active ? (w.processNetRates(last: 5).first.map { " · \($0.name)" } ?? "") : ""
+                items.append(NowItem(id: "net", name: w.interfaceLabel(n.name),
+                                     figure: "\(side)\(top) · \(n.baudrate / 1_000_000) Mb/s link",
+                                     fraction: util, label: "\(Int(util * 100))% of link", hot: util > 0.85, active: active))
+            }
         }
-        if let c = w.cpuRates(last: 1).last, c.performanceUtilisation >= 0.5 || c.speedLimit < 100 {
-            let top = w.groupedCPURates(last: 2).first.map { " · \($0.name) \(String(format: "%.1f", $0.cores))" } ?? ""
-            items.append(NowItem(id: "cpu", name: "CPU",
-                                 figure: "P \(Int(c.performanceUtilisation * 100))% · E \(Int(c.efficiencyUtilisation * 100))%\(top)",
-                                 fraction: c.performanceUtilisation,
-                                 label: c.speedLimit < 100 ? "limit \(c.speedLimit)%" : "busy \(Int(c.performanceUtilisation * 100))%",
-                                 hot: c.performanceUtilisation >= 0.9 || c.speedLimit < 100))
+        if let c = w.cpuRates(last: 1).last {
+            let active = c.performanceUtilisation >= 0.5 || c.speedLimit < 100
+            if all || active {
+                let top = w.groupedCPURates(last: 2).first.map { " · \($0.name) \(String(format: "%.1f", $0.cores))" } ?? ""
+                items.append(NowItem(id: "cpu", name: "CPU",
+                                     figure: "P \(Int(c.performanceUtilisation * 100))% · E \(Int(c.efficiencyUtilisation * 100))%\(top)",
+                                     fraction: c.performanceUtilisation,
+                                     label: c.speedLimit < 100 ? "limit \(c.speedLimit)%" : "busy \(Int(c.performanceUtilisation * 100))%",
+                                     hot: c.performanceUtilisation >= 0.9 || c.speedLimit < 100, active: active))
+            }
         }
-        if let m = w.latestMemory, m.pressure > .normal || w.pageOutRate(last: 5) > 0 {
+        if let m = w.latestMemory {
             let out = w.pageOutRate(last: 5)
-            items.append(NowItem(id: "mem", name: "Memory",
-                                 figure: "\(m.pressure.rawValue) · swap \(Units.bytes(Double(m.swapUsedBytes))) · out \(Units.rate(out))",
-                                 fraction: m.pressure == .critical ? 1 : (m.pressure == .warning ? 0.7 : 0.3),
-                                 label: m.pressure.rawValue, hot: m.pressure >= .warning))
+            let active = m.pressure > .normal || out > 0
+            if all || active {
+                items.append(NowItem(id: "mem", name: "Memory",
+                                     figure: "\(m.pressure.rawValue) · swap \(Units.bytes(Double(m.swapUsedBytes))) · out \(Units.rate(out))",
+                                     fraction: m.pressure == .critical ? 1 : (m.pressure == .warning ? 0.7 : (active ? 0.3 : 0)),
+                                     label: m.pressure.rawValue, hot: m.pressure >= .warning, active: active))
+            }
         }
         return items
+    }
+
+    /// True while any listed resource is busy.
+    var anyNowActive: Bool { nowItems.contains { $0.active } }
+
+    private func diskRow(_ id: String, _ r: DiskRate?) -> NowItem {
+        let name = engine.topology.displayName(forDisk: id)
+        guard let r, !r.isIdle else {
+            return NowItem(id: "disk-\(id)", name: name, figure: "idle", fraction: 0, label: "", hot: false, active: false)
+        }
+        let side = r.readBytesPerSec >= r.writeBytesPerSec ? "read \(Units.rate(r.readBytesPerSec))" : "write \(Units.rate(r.writeBytesPerSec))"
+        return NowItem(id: "disk-\(id)", name: name,
+                       figure: "\(side) · \(Units.ops(r.opsPerSec)) · \(Units.ms(r.serviceMsPerOp))",
+                       fraction: r.busy,
+                       label: r.queueDepth >= 1.5 ? "queue \(Int(r.queueDepth))" : "busy \(Int(r.busy * 100))%",
+                       hot: r.busy > 0.8,
+                       active: r.opsPerSec >= 5 || r.bytesPerSec >= 500_000)
     }
 
     var lastResolved: Finding? { history.first }

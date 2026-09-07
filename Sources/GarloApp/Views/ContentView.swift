@@ -40,12 +40,16 @@ struct ContentView: View {
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if store.nowItems.isEmpty && store.problems.isEmpty {
-                idle
-            } else {
-                if !store.nowItems.isEmpty { nowSection }
-                findingsSection
+        let quiet = !store.anyNowActive && store.problems.isEmpty
+        return VStack(alignment: .leading, spacing: 16) {
+            if quiet { idleCard }
+            if !store.nowItems.isEmpty { nowSection }
+            if !quiet { findingsSection }
+            if quiet, let last = store.lastResolved {
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionLabel("Last resolved")
+                    ResolvedCard(finding: last)
+                }
             }
             if !store.notices.isEmpty { noticesSection }
         }
@@ -83,26 +87,17 @@ struct ContentView: View {
 
     // MARK: Sections
 
-    private var idle: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 10) {
-                Circle().fill(Color.ok).frame(width: 8, height: 8)
-                Text("Nothing is busy and nothing is open.")
-                    .font(.system(size: 13, weight: .medium))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.surface, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.hairline, lineWidth: 0.5))
-
-            if let last = store.lastResolved {
-                VStack(alignment: .leading, spacing: 6) {
-                    SectionLabel("Last resolved")
-                    ResolvedCard(finding: last)
-                }
-            }
+    private var idleCard: some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color.ok).frame(width: 8, height: 8)
+            Text("Nothing is busy and nothing is open.")
+                .font(.system(size: 13, weight: .medium))
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.hairline, lineWidth: 0.5))
     }
 
     private var nowSection: some View {
@@ -129,7 +124,7 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             if store.problems.isEmpty {
-                Text(store.nowItems.isEmpty ? "" : "Busy, but nothing is slower than it should be.")
+                Text(store.anyNowActive ? "Busy, but nothing is slower than it should be." : "")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 2)
@@ -228,6 +223,7 @@ struct NowRow: View {
                     Text(item.figure)
                         .font(.system(size: 11, design: .monospaced))
                         .lineLimit(1)
+                        .foregroundStyle(item.active ? Color.primary : Color.secondary)
                     Spacer()
                     Text(item.label)
                         .font(.system(size: 11, weight: .semibold))

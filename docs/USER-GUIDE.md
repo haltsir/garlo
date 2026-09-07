@@ -33,14 +33,14 @@ Click the icon to open the popover.
 
 From top to bottom:
 
-- **Now.** One row per resource that is busy at this moment: a disk, the network link, the CPU, memory. Each row shows the rate, a bar for how busy it is, and a label such as "busy 92%" or "queue 40" (requests waiting). Rows appear after two seconds of activity and stay ten seconds after it ends, so the list does not flicker.
+- **Now.** One row per resource: every disk, the network link, the CPU and memory. Each row shows the rate, a bar for how busy it is, and a label such as "busy 92%" or "queue 40" (requests waiting). Idle resources say "idle" in grey, so the list is a fixed dashboard you can read at a glance. Settings > Popover > Show every resource in Now turns that off; then only busy resources are listed, appearing after two seconds of activity and staying ten seconds after it ends.
 - **Findings.** Cards for things that are slow or stalled. This is what the app exists for.
 - **Notices.** Cards for things worth knowing that are not slowing you down yet: a volume nearing full, a copy that is keeping up on both sides, two enclosures sharing one USB controller.
 - **Last resolved.** The most recent finding that cleared, with its start and end time.
 - **Open History** opens the History window (see below). The gear opens Settings.
 - A footer with Garlo's own cost: its CPU share and memory.
 
-When nothing is busy and nothing is open, the popover says so and stays empty.
+When nothing is busy and nothing is open, a green line at the top says so, above the resource list.
 
 ## Reading a card
 
@@ -110,6 +110,7 @@ History keeps one row per resource per minute for the period chosen in Settings 
 
 | Setting | What it does |
 | --- | --- |
+| Show every resource in Now | On by default: every disk, the link, CPU and memory stay listed while idle. Off lists only what is busy. |
 | Notifications | One switch per domain. Only confirmed slow or stalled findings notify. |
 | Send red alerts to Vestitel | Stalled findings and failing hardware go to the Vestitel inbox. |
 | Redact file paths | Keeps volume names, drops paths, in events and exports. |

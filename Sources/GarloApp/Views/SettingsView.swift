@@ -11,6 +11,9 @@ struct SettingsView: View {
         @Bindable var store = store
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                group("Popover") {
+                    toggleRow("Show every resource in Now", hint: "Every disk, the link, CPU and memory stay listed while idle. Off lists only what is busy.", $store.settings.showAllNow)
+                }
                 group("Notifications", footer: "Only confirmed findings of severity slow or stalled ever notify. Suspected findings wait in the popover.") {
                     toggleRow("Storage transfers", hint: "Confirmed slow or stalled findings on a copy you are waiting for", $store.settings.notifyStorage)
                     toggleRow("Network", hint: "Link saturated, Wi-Fi limited, bufferbloat, packet loss", $store.settings.notifyNetwork)
@@ -110,7 +113,7 @@ struct SettingsView: View {
             }
             .padding(16)
         }
-        .frame(width: 520, height: 720)
+        .frame(width: 520, height: 780)
         .background(Color.codeBackground)
         .onAppear { launchAtLogin = SMAppService.mainApp.status == .enabled }
     }
