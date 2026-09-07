@@ -11,14 +11,18 @@ struct ContentView: View {
     @State private var heldHeight: CGFloat = 200
 
     var body: some View {
-        @Bindable var store = store
         VStack(spacing: 0) {
             header
             Divider()
             // The popover sizes to its content up to a limit, then scrolls.
             // A menu-bar window proposes no height, so the content is measured.
+            // The file layout is a page in this same window, never a sheet:
+            // the menu bar window hides on a mouse-down in any other window,
+            // so every click in a sheet closed the popover.
             ScrollView {
-                content
+                Group {
+                    if let req = store.layoutPage { LayoutPage(request: req) } else { content }
+                }
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
                         contentHeight = h
                         heldHeight = max(heldHeight, min(max(h, 60), 560))
@@ -34,9 +38,6 @@ struct ContentView: View {
             heldHeight = min(max(contentHeight, 60), 560)
         }
         .onDisappear { store.popoverOpen = false }
-        .sheet(item: $store.layoutSheet) { req in
-            LayoutSheet(request: req)
-        }
     }
 
     private var content: some View {

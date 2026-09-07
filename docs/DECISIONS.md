@@ -20,6 +20,8 @@ Product and engineering decisions with the reason behind each, so nobody re-liti
 
 **Vestitel receives red alerts only.** Confirmed stalled findings and the device-slow rule. Everything else stays in the popover and History; an inbox full of "copy is read-bound" would be noise.
 
+**The file layout is a page inside the popover, not a sheet.** The menu bar window hides on a mouse-down in any window but its own, and a sheet is another window: every click in it, Done included, closed the popover, and the sheet came back on the next open. The layout takes the place of the cards; Done brings them back.
+
 **Proactive layout scanning stays off.** Scanning would read the disks that are already the problem. Layouts are probed only for files involved in a detected transfer, or one the user picks, and never for files under 64 MB.
 
 **Two busy disks are not a transfer.** The transfer rule needs a copier process with files on both volumes or the destination's free space draining at the write rate. Torrent seeding plus background boot-disk writes had produced a false "Copy is read-bound". The copied file is only ever the copier's own largest open file or one the user picked; the drain is judged over the whole minute because APFS reports free space with a lag; and without a copier the source must read at least half of what the destination writes, the closest ratio winning.

@@ -13,7 +13,7 @@ The SwiftUI `MenuBarExtra` app (`LSUIElement`, no Dock icon). Copied into the bu
 | `Notifier.swift` | `UNUserNotificationCenter`; bundle only, the bare binary skips silently. |
 | `MenuBarIcon.swift` | The throat glyph drawn in code, template at rest, amber or red dot. Keep `Tools/make-icon.swift` in sync. |
 | `Views/ContentView.swift` | The popover: header, Now, Findings, Notices, Last resolved, footer. |
-| `Views/FindingCard.swift` | The card, action chips, the Wrong button, the layout sheet. |
+| `Views/FindingCard.swift` | The card, action chips, the Wrong button, the file layout page. |
 | `Views/HistoryView.swift` | Lanes, bars, the device page with baseline and trend. |
 | `Views/SettingsView.swift` | Every setting, the helper controls, overhead, updates. |
 
@@ -21,6 +21,7 @@ The SwiftUI `MenuBarExtra` app (`LSUIElement`, no Dock icon). Copied into the bu
 
 - Every new `Settings` field gets a default in `init(from:)`, or an old `state.json` fails to decode and the user's settings vanish.
 - The store is the only thing that talks to the engine; views read the store. Anything the core cannot know (foreground pid, the helper, the rollup store) is injected here.
+- Nothing in the popover opens a second window (no sheet, popover or alert): the `MenuBarExtra` window hides on a mouse-down in any other window, so every click in a sheet closed the popover. The file layout is a page shown in place of the cards.
 - Now rows: fixed order disks, link, CPU, memory; the popover never shrinks while open. With `showAllNow` (default on) every resource is listed and idle ones say "idle" (`NowItem.active` false); with it off rows take 2 s to appear and stay 10 s. Do not undo the hysteresis for a cosmetic change; it was the 0.2.2 fix.
 - Notifications go out once, on confirmation, for slow or stalled only, gated by the domain switch. Vestitel gets red alerts only (`Finding.isRedAlert`), with `Finding.alertID()` as the event id so a flapping finding is one inbox item per day.
 - The updater swap waits for `popoverOpen` to turn false. Test instances (`GARLO_STATE_DIR`) never update without `GARLO_UPDATE_URL`.

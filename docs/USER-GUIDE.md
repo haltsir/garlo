@@ -50,7 +50,7 @@ Every card has the same shape:
 2. **Cause.** One or two sentences with numbers: which file, how many pieces it is in, which process shares the disk, how far the link is from its ceiling.
 3. **Contributors.** The processes adding to the problem, each with what it is doing.
 4. **Evidence.** The measurements the verdict rests on: rates, queue depths, service times, link speeds.
-5. **Actions.** Buttons for what to do about it: pause the process that competes for the disk, reveal the file, show its layout, run a throughput test, enable the helper. The first action is the one Garlo recommends. Each action says what effect to expect.
+5. **Actions.** Buttons for what to do about it: pause the process that competes for the disk, reveal the file, show its layout, run a throughput test, enable the helper. The first action is the one Garlo recommends. Each action says what effect to expect. The file layout opens in place of the cards; Done brings them back.
 6. **Wrong.** Press this when Garlo got it wrong. The card disappears, and the last minute of measurements is saved under `~/Library/Application Support/Garlo/Fixtures/` so the mistake can be turned into a test. The file contains the names of open files and processes on your Mac. Share it only after running it through the anonymiser described in the advanced guide.
 
 ### Suspected and confirmed

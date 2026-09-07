@@ -83,7 +83,7 @@ final class AppStore {
     var updaterTask: Task<Void, Never>?
     /// Resolved findings from earlier runs plus this one, newest first.
     private(set) var history: [Finding] = []
-    var layoutSheet: LayoutRequest?
+    var layoutPage: LayoutRequest?
     var throughputRunning = false
     var lastThroughput: ThroughputTest.Result?
 
@@ -339,15 +339,15 @@ final class AppStore {
 
     func showLayout(_ path: String) {
         if let known = engine.window.layouts[path], let l = known {
-            layoutSheet = LayoutRequest(path: path, layout: l, done: true)
+            layoutPage = LayoutRequest(path: path, layout: l, done: true)
             return
         }
-        layoutSheet = LayoutRequest(path: path, layout: nil, done: false)
+        layoutPage = LayoutRequest(path: path, layout: nil, done: false)
         Task { [weak self] in
             let layout = await Task.detached(priority: .utility) { FileLayout.probe(path: path) }.value
             guard let self else { return }
             engine.setLayout(layout, for: path)
-            if layoutSheet?.path == path { layoutSheet = LayoutRequest(path: path, layout: layout, done: true) }
+            if layoutPage?.path == path { layoutPage = LayoutRequest(path: path, layout: layout, done: true) }
         }
     }
 

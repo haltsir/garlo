@@ -148,8 +148,8 @@ struct FlowLayout: Layout {
     }
 }
 
-/// "Show file layout": the extent walk result.
-struct LayoutSheet: View {
+/// "Show file layout": the extent walk result, shown in place of the cards.
+struct LayoutPage: View {
     @Environment(AppStore.self) private var store
     let request: AppStore.LayoutRequest
 
@@ -183,10 +183,14 @@ struct LayoutSheet: View {
             }
             HStack {
                 Spacer()
-                Button("Done") { store.layoutSheet = nil }.keyboardShortcut(.defaultAction)
+                Button("Done") { store.layoutPage = nil }.keyboardShortcut(.defaultAction)
             }
         }
         .padding(16)
-        .frame(width: 400)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.hairline, lineWidth: 0.5))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
 }
