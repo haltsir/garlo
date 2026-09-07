@@ -84,6 +84,26 @@ struct ContentView: View {
     private func open(_ id: String) {
         openWindow(id: id)
         NSApp.activate(ignoringOtherApps: true)
+        closePopover()
+    }
+
+    /// The popover floats at menu level, above every ordinary window, so a
+    /// window opened from it lands behind it unless the popover goes first.
+    /// SwiftUI offers no call for this. Closing its panel directly leaves
+    /// SwiftUI believing the popover is still shown (the next click on the
+    /// icon then does nothing), so the status item's own button is clicked
+    /// instead, which toggles it the way the user's click would.
+    private func closePopover() {
+        for window in NSApp.windows where String(describing: type(of: window)).contains("NSStatusBarWindow") {
+            if let button = firstStatusButton(in: window.contentView) { button.performClick(nil); return }
+        }
+    }
+
+    private func firstStatusButton(in view: NSView?) -> NSStatusBarButton? {
+        guard let view else { return nil }
+        if let b = view as? NSStatusBarButton { return b }
+        for sub in view.subviews { if let b = firstStatusButton(in: sub) { return b } }
+        return nil
     }
 
     // MARK: Sections
