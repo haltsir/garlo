@@ -263,12 +263,60 @@ final class AppStore {
             return NowItem(id: "disk-\(id)", name: name, figure: "idle", fraction: 0, label: "", hot: false, active: false)
         }
         let side = r.readBytesPerSec >= r.writeBytesPerSec ? "read \(Units.rate(r.readBytesPerSec))" : "write \(Units.rate(r.writeBytesPerSec))"
+        let active = r.opsPerSec >= 5 || r.bytesPerSec >= 500_000
+        let top = active ? (engine.window.attributions(disk: id, last: 5).first.map { " · \($0.process.name)" } ?? "") : ""
         return NowItem(id: "disk-\(id)", name: name,
-                       figure: "\(side) · \(Units.ops(r.opsPerSec)) · \(Units.ms(r.serviceMsPerOp))",
+                       figure: "\(side) · \(Units.ops(r.opsPerSec)) · \(Units.ms(r.serviceMsPerOp))\(top)",
                        fraction: r.busy,
                        label: r.queueDepth >= 1.5 ? "queue \(Int(r.queueDepth))" : "busy \(Int(r.busy * 100))%",
                        hot: r.busy > 0.8,
-                       active: r.opsPerSec >= 5 || r.bytesPerSec >= 500_000)
+                       active: active)
+    }
+
+    /// Who is behind a Now row, for the expanded row: the three heaviest
+    /// processes with what each is doing, or one line on why nobody is named.
+    /// Computed on demand, so a collapsed row costs nothing per tick.
+    struct NowDetail {
+        var contributors: [Contributor]
+        var note: String?
+    }
+
+    func nowDetail(for item: NowItem) -> NowDetail {
+        let w = engine.window
+        let unseen = helper.state == .installed
+            ? "Nothing with a name is behind this; the traffic is the system's own."
+            : "Processes of other users and root are not visible; enable the helper to name them."
+        let idle = "Nothing is using it right now."
+        if item.id.hasPrefix("disk-") {
+            guard item.active else { return NowDetail(contributors: [], note: idle) }
+            let id = String(item.id.dropFirst(5))
+            let rows = w.attributions(disk: id, last: 5).filter { $0.process.bytesPerSec > 0 }.prefix(3).map { a in
+                let p = a.process
+                let side = p.readBytesPerSec >= p.writeBytesPerSec ? "read \(Units.rate(p.readBytesPerSec))" : "write \(Units.rate(p.writeBytesPerSec))"
+                let file = a.files.max { $0.sizeBytes < $1.sizeBytes }.map { URL(fileURLWithPath: $0.path).lastPathComponent } ?? ""
+                let more = a.files.count > 1 ? " and \(a.files.count - 1) more" : ""
+                return Contributor(name: p.name, detail: file.isEmpty ? side : "\(side) · \(file)\(more)", bundleID: p.bundleID)
+            }
+            return NowDetail(contributors: Array(rows), note: rows.isEmpty ? unseen : nil)
+        }
+        switch item.id {
+        case "net":
+            guard item.active else { return NowDetail(contributors: [], note: idle) }
+            let rows = w.processNetRates(last: 5).filter { $0.bytesPerSec > 0 }.prefix(3)
+                .map { Contributor(name: $0.name, detail: "down \(Units.rate($0.inBytesPerSec)) · up \(Units.rate($0.outBytesPerSec))") }
+            return NowDetail(contributors: Array(rows), note: rows.isEmpty ? "Per-process traffic is sampled only while the link is busy." : nil)
+        case "cpu":
+            guard item.active else { return NowDetail(contributors: [], note: idle) }
+            let rows = w.groupedCPURates(last: 2).filter { $0.cores >= 0.05 }.prefix(3)
+                .map { Contributor(name: $0.name, detail: String(format: "%.1f cores", $0.cores), bundleID: $0.bundleID) }
+            return NowDetail(contributors: Array(rows), note: rows.isEmpty ? unseen : nil)
+        case "mem":
+            let rows = w.processCPURates(last: 1).sorted { $0.footprintBytes > $1.footprintBytes }.prefix(3)
+                .map { Contributor(name: $0.name, detail: Units.bytes(Double($0.footprintBytes)), bundleID: $0.bundleID) }
+            return NowDetail(contributors: Array(rows), note: rows.isEmpty ? unseen : nil)
+        default:
+            return NowDetail(contributors: [], note: nil)
+        }
     }
 
     var lastResolved: Finding? { history.first }

@@ -211,40 +211,67 @@ struct HeaderButton: View {
 }
 
 struct NowRow: View {
+    @Environment(AppStore.self) private var store
     let item: AppStore.NowItem
+    /// Open rows stay open while the popover is; a reopen starts collapsed.
+    @State private var expanded = false
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Text(item.name)
-                .font(.system(size: 13, weight: .semibold))
-                .lineLimit(1)
-                .frame(width: 84, alignment: .leading)
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(item.figure)
-                        .font(.system(size: 11, design: .monospaced))
-                        .lineLimit(1)
-                        .foregroundStyle(item.active ? Color.primary : Color.secondary)
-                    Spacer()
-                    Text(item.label)
-                        .font(.system(size: 11, weight: .semibold))
-                        .monospacedDigit()
-                        .foregroundStyle(item.hot ? Color.warn : .secondary)
-                        .frame(width: 84, alignment: .trailing)
-                }
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.primary.opacity(0.08))
-                        Capsule().fill(item.hot ? Color.warn : Color.accent)
-                            .frame(width: max(2, geo.size.width * min(1, item.fraction)))
-                    }
-                }
-                .frame(height: 4)
+        // Name and label on one line, the figure on its own full-width line,
+        // so neither the disk name nor the measurement is ever cut short.
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(item.name)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Text(item.label)
+                    .font(.system(size: 11, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(item.hot ? Color.warn : .secondary)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(expanded ? 90 : 0))
             }
+            Text(item.figure)
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(item.active ? Color.primary : Color.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.primary.opacity(0.08))
+                    Capsule().fill(item.hot ? Color.warn : Color.accent)
+                        .frame(width: max(2, geo.size.width * min(1, item.fraction)))
+                }
+            }
+            .frame(height: 4)
+            if expanded { detail }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .frame(minHeight: 44)
+        .contentShape(Rectangle())
+        .onTapGesture { expanded.toggle() }
+    }
+
+    /// The processes behind the row, read from the store only while open.
+    private var detail: some View {
+        let d = store.nowDetail(for: item)
+        return VStack(alignment: .leading, spacing: 2) {
+            ForEach(Array(d.contributors.enumerated()), id: \.offset) { _, c in
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(c.name).font(.system(size: 12, weight: .semibold))
+                    Text(c.detail).font(.system(size: 12)).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if let n = d.note {
+                Text(n).font(.system(size: 11)).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.top, 4)
     }
 }
 

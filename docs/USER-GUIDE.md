@@ -33,7 +33,7 @@ Click the icon to open the popover.
 
 From top to bottom:
 
-- **Now.** One row per resource: every disk, the network link, the CPU and memory. Each row shows the rate, a bar for how busy it is, and a label such as "busy 92%" or "queue 40" (requests waiting). Idle resources say "idle" in grey, so the list is a fixed dashboard you can read at a glance. Settings > Popover > Show every resource in Now turns that off; then only busy resources are listed, appearing after two seconds of activity and staying ten seconds after it ends.
+- **Now.** One row per resource: every disk, the network link, the CPU and memory. Each row shows the rate, the process moving the most, a bar for how busy it is, and a label such as "busy 92%" or "queue 40" (requests waiting). An amber bar means the resource is near its limit. Click a row to see who is behind it: the three heaviest processes with what each is doing (for a disk, the file it is working on), or one line on why nobody can be named. Idle resources say "idle" in grey, so the list is a fixed dashboard you can read at a glance. Settings > Popover > Show every resource in Now turns that off; then only busy resources are listed, appearing after two seconds of activity and staying ten seconds after it ends.
 - **Findings.** Cards for things that are slow or stalled. This is what the app exists for.
 - **Notices.** Cards for things worth knowing that are not slowing you down yet: a volume nearing full, a copy that is keeping up on both sides, two enclosures sharing one USB controller.
 - **Last resolved.** The most recent finding that cleared, with its start and end time.
