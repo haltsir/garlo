@@ -11,7 +11,7 @@ struct Settings: Codable, Equatable {
     var sendToVestitel = true
     var redactPaths = false
     var historyDays = 90
-    var latencyAnchor = "one.one.one.one"
+    var latencyAnchor = "1.1.1.1"
     var throughputURL = "https://speed.cloudflare.com/__down?bytes=200000000"
     var autoUpdateEnabled = true
     /// Now lists every disk, the link, CPU and memory even while idle.
@@ -29,7 +29,11 @@ struct Settings: Codable, Equatable {
         sendToVestitel = try c.decodeIfPresent(Bool.self, forKey: .sendToVestitel) ?? true
         redactPaths = try c.decodeIfPresent(Bool.self, forKey: .redactPaths) ?? false
         historyDays = try c.decodeIfPresent(Int.self, forKey: .historyDays) ?? 90
-        latencyAnchor = try c.decodeIfPresent(String.self, forKey: .latencyAnchor) ?? "one.one.one.one"
+        // The address, not the name: a name costs a lookup per probe and a DNS
+        // outage would read as the anchor being unreachable. A saved copy of
+        // the old default follows the change; anything else the user typed stays.
+        let anchor = try c.decodeIfPresent(String.self, forKey: .latencyAnchor) ?? "1.1.1.1"
+        latencyAnchor = anchor == "one.one.one.one" ? "1.1.1.1" : anchor
         throughputURL = try c.decodeIfPresent(String.self, forKey: .throughputURL) ?? "https://speed.cloudflare.com/__down?bytes=200000000"
         autoUpdateEnabled = try c.decodeIfPresent(Bool.self, forKey: .autoUpdateEnabled) ?? true
         showAllNow = try c.decodeIfPresent(Bool.self, forKey: .showAllNow) ?? true

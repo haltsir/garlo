@@ -47,7 +47,7 @@ The debug binary is at `.build/debug/garlo` after `swift build`. It runs the sam
 | `garlo topology` | Every disk with size, interconnect, media kind, USB link speed and what it could support, hubs and controller; every volume with mount point, use, free space, filesystem and APFS defragmentation status. Volumes without a physical disk are listed with a question mark. |
 | `garlo layout <file>` | The extent walk of one file: size, pieces, median piece, physical span, pieces per 8 MB, and whether it counts as fragmented. |
 | `garlo candidates [ticks]` | What every rule proposes on each tick, before the lifecycle, with the disks each candidate explains and any volume draining free space. The tool for "why did (or did not) that card appear". |
-| `garlo probe [host]` | The default route, three gateway round trips, three round trips to the host (default one.one.one.one), and three DNS timings. |
+| `garlo probe [host]` | The default route, three gateway round trips, three round trips to the host (default 1.1.1.1), and three DNS timings. |
 | `garlo record <out.json> [seconds]` | `sample` that also saves every frame, the topology and probed layouts as a fixture. Default 60 seconds. |
 | `garlo replay <fixture.json>` | Runs a fixture through the rules and prints the events and the findings open at the end. |
 

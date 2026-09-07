@@ -41,7 +41,7 @@ public final class Engine {
     /// Set by the app from NSWorkspace; the core has no AppKit.
     public var foregroundPID: Int32?
     /// Host probed for round-trip time; nothing else leaves the Mac.
-    public var latencyAnchor = "one.one.one.one"
+    public var latencyAnchor = "1.1.1.1"
     /// The privileged helper, when installed. Its snapshot rides the next
     /// frame so root processes get open files and counters like any other.
     public var helper: (any PrivilegedSource)? {

@@ -116,7 +116,7 @@ History keeps one row per resource per minute for the period chosen in Settings 
 | Redact file paths | Keeps volume names, drops paths, in events and exports. |
 | Privileged helper | Install, Remove, or open Login Items when approval is pending. |
 | Keep history for | 7, 30 or 90 days of findings and one-minute rollups. |
-| Latency anchor | The one host Garlo probes for round-trip time. Default one.one.one.one. |
+| Latency anchor | The one host Garlo probes for round-trip time. Default 1.1.1.1, an address rather than a name so the probe never waits on DNS. |
 | Throughput test | The URL of the opt-in five-second download. Run it from here or from a card. |
 | Clear history | Removes findings, rollups and learned baselines. |
 | Overhead now | Garlo's own CPU and memory, measured by its own samplers. |

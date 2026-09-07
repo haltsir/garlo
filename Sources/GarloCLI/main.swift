@@ -131,7 +131,7 @@ case "candidates":
     }
 
 case "probe":
-    let host = args.count > 1 ? args[1] : "one.one.one.one"
+    let host = args.count > 1 ? args[1] : "1.1.1.1"
     let gw = NetworkSampler.defaultRoute()
     print("default route: \(gw.map { "\($0.interface) via \($0.gateway)" } ?? "none")")
     if let gw, !gw.gateway.isEmpty {
